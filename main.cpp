@@ -5,8 +5,9 @@
 #include <vector>
 #include <cmath>
 #include <functional>
+#include <chrono>
 
-double MonteCarloMethod(size_t numThreads, size_t n, double a, double b, double (*f)(double)){
+double MCM(size_t numThreads, size_t n, double a, double b, double (*f)(double)){
     double result = 0;
     std::random_device rd;
     std::mt19937 gen(rd());
@@ -29,7 +30,22 @@ double MonteCarloMethod(size_t numThreads, size_t n, double a, double b, double 
     return (b-a)/n*result;
 }
 
+void ApproximationMCM(size_t num, size_t numThreads, size_t n, double a, double b, double (*f)(double)){
+    auto start = std::chrono::high_resolution_clock::now();
+    double result = 0;
+    for (size_t i = 0; i < num; ++i){
+        result += MCM(numThreads, n, a, b, *f);
+    }
+    auto stop = std::chrono::high_resolution_clock::now();
+    std::cout << result/num << '\n';
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count()/static_cast<double>(num) << '\n';
+}
+
+bool AccuracyMCM(){
+    return true;
+}
+
 int main(){
-    std::cout << MonteCarloMethod(10, 10000, 0, M_PI, *sin) << '\n';
+    ApproximationMCM(100, 10, 10000, 0, M_PI, *sin);
     return 0;
 }
